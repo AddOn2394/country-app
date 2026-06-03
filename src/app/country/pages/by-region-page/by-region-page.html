@@ -1,1 +1,15 @@
+<h1 class="text-2xl font-bold mb-4">Busqueda por región</h1>
+<h2 class="text-xl font-bold mb-2">Seleccione una región</h2>
+
+<section class="row mt-2">
+  <div class="flex-col">
+    @for (region of regions; track region) {
+      <button class="btn btn-outline btn-secondary mr-2 w-[100px]" [class.btn-active]="selectedRegion() === region"  (click)="selectedRegion.set(region)">{{ region }}</button>
+    }
+  </div>
+</section>
+
+<section class="row">
+  <country-list [countries]="countryResource.value()" [errorMessage]="countryResource.error()" [isLoading]="countryResource.isLoading()" [isEmpty]="countryResource.value()?.length === 0" />
+</section>
 <!-- <country-list /> -->

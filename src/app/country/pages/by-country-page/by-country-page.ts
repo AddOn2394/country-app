@@ -1,9 +1,10 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, inject, linkedSignal, signal } from '@angular/core';
 import { CountrySearch } from '../../components/country-search/country-search';
 import { CountryList } from '../../components/country-list/country-list';
 import { CountryService } from '@country/services/country.service';
-import { firstValueFrom, of } from 'rxjs';
+import { of } from 'rxjs';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'by-country-page',
@@ -12,8 +13,10 @@ import { rxResource } from '@angular/core/rxjs-interop';
 })
 export class ByCountryPage {
   countryService = inject(CountryService);
-  query = signal('');
-
+  activatedRoute = inject(ActivatedRoute);
+  router = inject(Router);
+  queryParam = this.activatedRoute.snapshot.queryParamMap.get('query') ?? '';
+  query = linkedSignal<string>(() => this.queryParam);
 
   countryResource = rxResource({
     params: () => ({ query: this.query() }),
@@ -23,45 +26,11 @@ export class ByCountryPage {
         return of([]);
       }
 
+      this.router.navigate(['/country/by-country'], { queryParams: { query: params.query } });
       return this.countryService.searchByCountry(params.query, 'spa');
     },
     // Opcional pero recomendado: define un estado inicial para evitar 'undefined'
     defaultValue: []
   });
-  // countryResource = resource({
-  //   params: () => ({ query: this.query() }),
-  //   loader: async({ params }) => {
-
-  //     if (params.query.trim() === '') return [];
-
-  //     return await firstValueFrom(
-  //       this.countryService.searchByCountry(params.query, 'spa')
-  //     );
-  //   },
-  // })
-
-  // isLoading = signal(false);
-  // isError = signal<string | null>(null);
-  // countries = signal<Country[]>([]);
-
-  // onSearch(query: string) {
-  //   if (this.isLoading()) return;
-  //   this.isLoading.set(true);
-  //   this.isError.set(null);
-
-  //   this.countryService.searchByCountry(query, 'spa').subscribe({
-  //     next: (countries) => {
-  //       this.countries.set(countries);
-  //       this.isLoading.set(false);
-  //     },
-  //     error: (err) => {
-  //       this.isLoading.set(false);
-  //       this.countries.set([]);
-  //       this.isError.set(`No se encontró ningún país con ese nombre ${query}`);
-  //       console.log(err);
-  //     },
-  //   });
-  // }
-
 
 }
